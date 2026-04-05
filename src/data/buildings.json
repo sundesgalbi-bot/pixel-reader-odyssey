@@ -1,0 +1,95 @@
+{
+  "_comment": "Dictionnaire de référence : Genre → Apparence du bâtiment. Synchronisé avec GameConfig.js",
+  "buildings": {
+    "Fantasy": {
+      "label": "Tour de Sorcier",
+      "emoji": "🏰",
+      "color": "#6a3fcb",
+      "roofColor": "#9d6ef7",
+      "doorColor": "#f0c040",
+      "height": 3,
+      "spriteKey": "building_fantasy",
+      "description": "Une tour de sorcier aux pierres violettes, étincelante de magie."
+    },
+    "Sci-Fi": {
+      "label": "Station Galactique",
+      "emoji": "🛸",
+      "color": "#1a6ea8",
+      "roofColor": "#40c0ff",
+      "doorColor": "#00ffcc",
+      "height": 2,
+      "spriteKey": "building_scifi",
+      "description": "Une station spatiale futuriste aux néons bleus."
+    },
+    "Mystery": {
+      "label": "Manoir Mystère",
+      "emoji": "🔍",
+      "color": "#3a3a3a",
+      "roofColor": "#1a1a1a",
+      "doorColor": "#8b0000",
+      "height": 3,
+      "spriteKey": "building_mystery",
+      "description": "Un manoir sombre aux secrets bien gardés."
+    },
+    "Romance": {
+      "label": "Cottage Enchanté",
+      "emoji": "💖",
+      "color": "#c0385a",
+      "roofColor": "#ff80a0",
+      "doorColor": "#ffffff",
+      "height": 1,
+      "spriteKey": "building_romance",
+      "description": "Un cottage fleuri débordant de charme et de douceur."
+    },
+    "Horror": {
+      "label": "Demeure Hantée",
+      "emoji": "👻",
+      "color": "#2a1a00",
+      "roofColor": "#000000",
+      "doorColor": "#660000",
+      "height": 4,
+      "spriteKey": "building_horror",
+      "description": "Une demeure hantée dont les grincements glacent le sang."
+    },
+    "Historical": {
+      "label": "Temple Antique",
+      "emoji": "🏛️",
+      "color": "#b08030",
+      "roofColor": "#d4a040",
+      "doorColor": "#8b6914",
+      "height": 2,
+      "spriteKey": "building_historical",
+      "description": "Un temple aux colonnes dorées, témoin des âges passés."
+    },
+    "Biography": {
+      "label": "Grande Bibliothèque",
+      "emoji": "📖",
+      "color": "#2e6e2e",
+      "roofColor": "#40a040",
+      "doorColor": "#8b4513",
+      "height": 2,
+      "spriteKey": "building_biography",
+      "description": "Une bibliothèque imposante aux rayons infinis."
+    },
+    "Self-Help": {
+      "label": "Atelier du Savoir",
+      "emoji": "🌱",
+      "color": "#e07010",
+      "roofColor": "#f09030",
+      "doorColor": "#ffd700",
+      "height": 1,
+      "spriteKey": "building_selfhelp",
+      "description": "Un atelier lumineux où fleurissent les bonnes habitudes."
+    },
+    "Other": {
+      "label": "Taverne des Histoires",
+      "emoji": "📚",
+      "color": "#507050",
+      "roofColor": "#708060",
+      "doorColor": "#8b4513",
+      "height": 1,
+      "spriteKey": "building_other",
+      "description": "Une taverne accueillante pour toutes les histoires."
+    }
+  }
+}

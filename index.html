@@ -2,27 +2,27 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <!-- Désactive le zoom utilisateur pour une expérience type application native -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
- 
-  <!-- Métadonnées PWA (Android / iOS) -->
-  <meta name="mobile-web-app-capable" content="yes" />
+  <!-- Viewport optimisé pour mobile, pas de zoom utilisateur -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1a1a2e" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="PixelReader" />
-  <meta name="theme-color" content="#1a1040" />
-  <meta name="description" content="Lis des livres, bâtis ton monde en pixel art" />
+  <meta name="description" content="Pixel-Reader Odyssey – Transforme tes lectures en monde virtuel pixel art." />
  
   <title>Pixel-Reader Odyssey</title>
  
-  <!-- Icônes PWA -->
+  <!-- Manifest PWA -->
   <link rel="manifest" href="manifest.json" />
+ 
+  <!-- Icônes Apple -->
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
-  <link rel="icon" type="image/png" href="assets/icons/icon-192.png" />
+ 
+  <!-- Phaser 3.60 via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
  
   <style>
-    /* ── Reset & fondations ─────────────────────────────────── */
-    *, *::before, *::after {
+    /* ── Reset global ── */
+    * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -32,11 +32,11 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #1a1040; /* Couleur de fond pendant le chargement */
-      font-family: 'Courier New', monospace; /* Cohérence pixel art */
+      background-color: #1a1a2e; /* Couleur de fond pendant le chargement */
+      font-family: 'Press Start 2P', monospace, sans-serif;
     }
  
-    /* Conteneur Phaser — occupe tout l'écran */
+    /* Conteneur principal du canvas Phaser */
     #game-container {
       width: 100%;
       height: 100%;
@@ -45,18 +45,19 @@
       justify-content: center;
     }
  
-    /* Le canvas Phaser doit être centré sans barre de défilement */
-    #game-container canvas {
+    /* Canvas Phaser centré et responsive */
+    canvas {
       display: block;
-      image-rendering: pixelated;  /* Rendu pixel art net sur tous les navigateurs */
-      image-rendering: crisp-edges;
+      image-rendering: pixelated;        /* Chrome/Edge */
+      image-rendering: crisp-edges;      /* Firefox */
+      image-rendering: -moz-crisp-edges; /* Firefox ancien */
     }
  
-    /* ── Écran de chargement (affiché avant Phaser) ─────────── */
+    /* ── Overlay de chargement ── */
     #loading-screen {
       position: fixed;
       inset: 0;
-      background: #1a1040;
+      background: #1a1a2e;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -70,77 +71,69 @@
       pointer-events: none;
     }
  
-    .loading-title {
-      color: #AFA9EC;
-      font-size: clamp(18px, 5vw, 28px);
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      margin-bottom: 24px;
-    }
- 
-    .loading-bar-wrapper {
-      width: 200px;
-      height: 8px;
-      background: #2d1f6e;
-      border: 1px solid #4a3f8c;
-      border-radius: 4px;
-      overflow: hidden;
-    }
- 
-    .loading-bar {
-      height: 100%;
-      background: #7F77DD;
-      border-radius: 4px;
-      animation: loadBar 1.5s ease-in-out infinite;
-    }
- 
-    @keyframes loadBar {
-      0%   { width: 0%; }
-      50%  { width: 80%; }
-      100% { width: 100%; }
-    }
- 
-    .loading-subtitle {
-      color: #9990CC;
-      font-size: 11px;
+    #loading-screen h1 {
+      color: #f0c040;
+      font-size: clamp(10px, 3vw, 18px);
+      text-align: center;
+      text-shadow: 2px 2px 0 #8b6914;
       letter-spacing: 2px;
-      margin-top: 12px;
+      margin-bottom: 24px;
+      line-height: 1.6;
     }
  
-    /* ── Formulaire d'ajout de livre (overlay HTML) ─────────── */
-    #book-overlay {
-      display: none; /* Affiché via JS */
+    #loading-bar-bg {
+      width: 200px;
+      height: 16px;
+      background: #2a2a4e;
+      border: 2px solid #f0c040;
+      border-radius: 0;
+    }
+ 
+    #loading-bar {
+      height: 100%;
+      width: 0%;
+      background: #f0c040;
+      transition: width 0.3s ease;
+    }
+ 
+    #loading-text {
+      color: #a0a0c0;
+      font-size: 8px;
+      margin-top: 12px;
+      letter-spacing: 1px;
+    }
+ 
+    /* ── Formulaire HTML overlay (géré par UIScene) ── */
+    #book-form-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(10, 6, 30, 0.85);
-      backdrop-filter: blur(4px);
-      z-index: 1000;
+      background: rgba(10, 10, 30, 0.85);
+      display: none;
       align-items: center;
       justify-content: center;
+      z-index: 1000;
+      padding: 16px;
     }
  
-    #book-overlay.active {
+    #book-form-overlay.active {
       display: flex;
     }
  
-    .book-modal {
-      background: #1e1354;
-      border: 1px solid #4a3f8c;
-      border-radius: 16px;
-      padding: 24px;
-      width: 90%;
-      max-width: 400px;
-      color: #EDE8FF;
-      box-shadow: 0 0 40px rgba(127, 119, 221, 0.3);
+    #book-form {
+      background: #1a1a2e;
+      border: 3px solid #f0c040;
+      padding: 24px 20px;
+      width: 100%;
+      max-width: 360px;
+      image-rendering: pixelated;
     }
  
-    .book-modal h2 {
-      font-size: 16px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: #AFA9EC;
-      margin-bottom: 20px;
+    #book-form h2 {
+      color: #f0c040;
+      font-size: 10px;
       text-align: center;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
     }
  
     .form-group {
@@ -149,121 +142,101 @@
  
     .form-group label {
       display: block;
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #9990CC;
+      color: #a0c0ff;
+      font-size: 7px;
+      letter-spacing: 1px;
       margin-bottom: 6px;
     }
  
     .form-group input,
     .form-group select {
       width: 100%;
-      padding: 10px 14px;
-      background: #2d1f6e;
-      border: 1px solid #4a3f8c;
-      border-radius: 8px;
-      color: #EDE8FF;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
+      padding: 8px;
+      background: #0d0d1a;
+      border: 2px solid #4040a0;
+      color: #ffffff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
       outline: none;
-      transition: border-color 0.2s;
-      /* Supprime le look natif sur iOS */
-      -webkit-appearance: none;
-      appearance: none;
+      border-radius: 0;
     }
  
     .form-group input:focus,
     .form-group select:focus {
-      border-color: #7F77DD;
+      border-color: #f0c040;
     }
  
     /* Étoiles de notation */
     .star-rating {
       display: flex;
       gap: 8px;
+      margin-top: 4px;
     }
  
-    .star-rating input[type="radio"] {
-      display: none;
-    }
- 
-    .star-rating label {
-      font-size: 24px;
+    .star-btn {
+      background: none;
+      border: none;
+      color: #4040a0;
+      font-size: 20px;
       cursor: pointer;
-      color: #4a3f8c;
-      transition: color 0.15s, transform 0.15s;
-      user-select: none;
+      padding: 2px;
+      transition: color 0.1s;
+      line-height: 1;
     }
  
-    .star-rating label:hover,
-    .star-rating label:hover ~ label,
-    .star-rating input:checked ~ label {
-      color: #4a3f8c; /* Reset */
-    }
- 
-    .star-rating label:hover,
-    .star-rating input:checked + label,
-    .star-rating label.active {
-      color: #F2A623;
-      transform: scale(1.2);
+    .star-btn.active,
+    .star-btn:hover {
+      color: #f0c040;
     }
  
     /* Boutons du formulaire */
-    .btn-row {
+    .form-actions {
       display: flex;
       gap: 10px;
       margin-top: 20px;
     }
  
-    .btn-primary {
+    .btn-primary, .btn-secondary {
       flex: 1;
-      padding: 12px;
-      background: #7F77DD;
+      padding: 10px 4px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      cursor: pointer;
       border: none;
-      border-radius: 10px;
-      color: #fff;
-      font-family: 'Courier New', monospace;
-      font-size: 13px;
-      font-weight: bold;
-      letter-spacing: 2px;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
+      letter-spacing: 1px;
     }
  
-    .btn-primary:active {
-      background: #534AB7;
-      transform: scale(0.97);
+    .btn-primary {
+      background: #f0c040;
+      color: #1a1a2e;
     }
  
-    .btn-cancel {
-      padding: 12px 18px;
-      background: #2d1f6e;
-      border: 1px solid #4a3f8c;
-      border-radius: 10px;
-      color: #9990CC;
-      font-family: 'Courier New', monospace;
-      font-size: 13px;
-      cursor: pointer;
+    .btn-primary:hover { background: #ffd060; }
+ 
+    .btn-secondary {
+      background: #2a2a4e;
+      color: #a0a0c0;
+      border: 2px solid #4040a0;
     }
  
-    /* ── Toast de notification ──────────────────────────────── */
+    .btn-secondary:hover { background: #3a3a5e; }
+ 
+    /* Message de succès flash */
     #toast {
       position: fixed;
-      bottom: 100px;
+      bottom: 80px;
       left: 50%;
       transform: translateX(-50%) translateY(20px);
-      background: #2d1f6e;
-      border: 1px solid #7F77DD;
-      color: #AFA9EC;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 12px;
+      background: #2ecc71;
+      color: #0a2010;
+      padding: 10px 16px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
       letter-spacing: 1px;
-      z-index: 2000;
       opacity: 0;
-      transition: opacity 0.3s, transform 0.3s;
       pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 2000;
       white-space: nowrap;
     }
  
@@ -272,65 +245,75 @@
       transform: translateX(-50%) translateY(0);
     }
   </style>
+ 
+  <!-- Police pixel art Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 </head>
 <body>
  
-  <!-- Écran de chargement affiché pendant l'initialisation de Phaser -->
+  <!-- Écran de chargement affiché avant Phaser -->
   <div id="loading-screen">
-    <div class="loading-title">📚 Pixel-Reader</div>
-    <div class="loading-bar-wrapper">
-      <div class="loading-bar"></div>
+    <h1>PIXEL-READER<br>ODYSSEY</h1>
+    <div id="loading-bar-bg">
+      <div id="loading-bar"></div>
     </div>
-    <div class="loading-subtitle">chargement du monde...</div>
+    <div id="loading-text">CHARGEMENT...</div>
   </div>
  
-  <!-- Conteneur principal du jeu Phaser -->
+  <!-- Conteneur du canvas Phaser -->
   <div id="game-container"></div>
  
-  <!-- Overlay formulaire "Ajouter un livre" (géré depuis UIScene.js) -->
-  <div id="book-overlay">
-    <div class="book-modal">
-      <h2>📖 Nouveau livre</h2>
+  <!-- Overlay du formulaire d'ajout de livre (HTML natif pour accessibilité mobile) -->
+  <div id="book-form-overlay">
+    <div id="book-form">
+      <h2>+ NOUVEAU LIVRE</h2>
  
       <div class="form-group">
-        <label for="f-title">Titre du livre</label>
-        <input type="text" id="f-title" placeholder="Ex: Le Seigneur des Anneaux" autocomplete="off" />
+        <label for="input-title">TITRE</label>
+        <input type="text" id="input-title" placeholder="Ex: Dune" maxlength="60" />
       </div>
  
       <div class="form-group">
-        <label for="f-author">Auteur</label>
-        <input type="text" id="f-author" placeholder="Ex: J.R.R. Tolkien" autocomplete="off" />
+        <label for="input-author">AUTEUR</label>
+        <input type="text" id="input-author" placeholder="Ex: Frank Herbert" maxlength="60" />
       </div>
  
       <div class="form-group">
-        <label for="f-pages">Nombre de pages</label>
-        <input type="number" id="f-pages" placeholder="Ex: 1200" min="1" max="9999" />
+        <label for="input-pages">NOMBRE DE PAGES</label>
+        <input type="number" id="input-pages" placeholder="Ex: 412" min="1" max="9999" />
       </div>
  
       <div class="form-group">
-        <label for="f-genre">Genre</label>
-        <select id="f-genre">
+        <label for="input-genre">GENRE</label>
+        <select id="input-genre">
           <option value="Fantasy">⚔️ Fantasy</option>
-          <option value="SciFi">🚀 Science-Fiction</option>
-          <option value="Policier">🔍 Policier / Thriller</option>
+          <option value="Sci-Fi">🚀 Science-Fiction</option>
+          <option value="Mystery">🔍 Policier / Mystère</option>
           <option value="Romance">💖 Romance</option>
-          <option value="NonFiction">📊 Non-fiction</option>
-          <option value="Horreur">👻 Horreur</option>
-          <option value="Histoire">🏛️ Histoire</option>
-          <option value="DevPerso">🌿 Développement perso</option>
+          <option value="Horror">👻 Horreur</option>
+          <option value="Historical">🏛️ Historique</option>
+          <option value="Biography">📖 Biographie</option>
+          <option value="Self-Help">🌱 Développement perso</option>
+          <option value="Other">📚 Autre</option>
         </select>
       </div>
  
       <div class="form-group">
-        <label>Ta note</label>
+        <label>NOTE (1-5 ⭐)</label>
         <div class="star-rating" id="star-rating">
-          <!-- Les étoiles sont générées en JS pour plus de maintenabilité -->
+          <button class="star-btn" data-value="1">★</button>
+          <button class="star-btn" data-value="2">★</button>
+          <button class="star-btn" data-value="3">★</button>
+          <button class="star-btn" data-value="4">★</button>
+          <button class="star-btn" data-value="5">★</button>
         </div>
+        <input type="hidden" id="input-rating" value="3" />
       </div>
  
-      <div class="btn-row">
-        <button class="btn-cancel" onclick="window.closeBookForm()">Annuler</button>
-        <button class="btn-primary" onclick="window.submitBook()">CONSTRUIRE !</button>
+      <div class="form-actions">
+        <button class="btn-secondary" id="btn-cancel">ANNULER</button>
+        <button class="btn-primary" id="btn-submit">CONSTRUIRE !</button>
       </div>
     </div>
   </div>
@@ -338,21 +321,16 @@
   <!-- Toast de notification -->
   <div id="toast"></div>
  
-  <!-- ──────────────────────────────────────────────────────────
-       Phaser 3.60 via CDN jsDelivr (stable, pas de clé requise)
-       ────────────────────────────────────────────────────────── -->
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
- 
-  <!-- Point d'entrée de l'application -->
+  <!-- Point d'entrée principal du jeu -->
   <script type="module" src="src/main.js"></script>
  
-  <!-- Enregistrement du Service Worker pour le mode hors-ligne -->
+  <!-- Enregistrement du Service Worker (PWA offline) -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(reg => console.log('[PWA] Service Worker enregistré:', reg.scope))
-          .catch(err => console.warn('[PWA] Échec Service Worker:', err));
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(reg => console.log('[PWA] SW enregistré:', reg.scope))
+          .catch(err => console.warn('[PWA] Echec SW:', err));
       });
     }
   </script>

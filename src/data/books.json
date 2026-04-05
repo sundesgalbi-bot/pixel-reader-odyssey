@@ -1,0 +1,44 @@
+{
+  "_comment": "Ce fichier est la structure de données de référence pour un livre. Les données réelles sont stockées dans localStorage via SaveSystem.js",
+  "_schema": {
+    "id": "string  — identifiant unique ex: 'book_1720000000000'",
+    "title": "string  — titre du livre",
+    "author": "string  — auteur",
+    "pages": "number  — nombre de pages",
+    "genre": "string  — clé du dictionnaire GENRE_BUILDINGS",
+    "rating": "number  — note de 1 à 5",
+    "date": "string  — date ISO d'ajout",
+    "rewards": {
+      "xp": "number",
+      "gold": "number"
+    }
+  },
+  "defaultBooks": [
+    {
+      "id": "book_demo_001",
+      "title": "Le Seigneur des Anneaux",
+      "author": "J.R.R. Tolkien",
+      "pages": 1200,
+      "genre": "Fantasy",
+      "rating": 5,
+      "date": "2024-01-15T10:00:00.000Z",
+      "rewards": {
+        "xp": 180,
+        "gold": 70
+      }
+    },
+    {
+      "id": "book_demo_002",
+      "title": "Dune",
+      "author": "Frank Herbert",
+      "pages": 896,
+      "genre": "Sci-Fi",
+      "rating": 5,
+      "date": "2024-02-20T14:30:00.000Z",
+      "rewards": {
+        "xp": 134,
+        "gold": 54
+      }
+    }
+  ]
+}
