@@ -1,0 +1,22 @@
+{
+  "_comment": "État initial du monde. En production, cet état est écrasé par localStorage via SaveSystem.js",
+  "version": 1,
+  "world": {
+    "gridWidth": 20,
+    "gridHeight": 12,
+    "tileSize": 32,
+    "buildings": []
+  },
+  "player": {
+    "name": "Lecteur",
+    "xp": 0,
+    "gold": 10,
+    "level": 1
+  },
+  "stats": {
+    "totalPages": 0,
+    "totalBooks": 0,
+    "firstReadDate": null,
+    "lastReadDate": null
+  }
+}

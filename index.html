@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Viewport optimisé pour mobile, pas de zoom utilisateur -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Pixel-Reader Odyssey – Transforme tes lectures en monde virtuel pixel art." />
+ 
+  <title>Pixel-Reader Odyssey</title>
+ 
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="manifest.json" />
+ 
+  <!-- Icônes Apple -->
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+ 
+  <!-- Phaser 3.60 via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+ 
+  <style>
+    /* ── Reset global ── */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+ 
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #1a1a2e; /* Couleur de fond pendant le chargement */
+      font-family: 'Press Start 2P', monospace, sans-serif;
+    }
+ 
+    /* Conteneur principal du canvas Phaser */
+    #game-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+ 
+    /* Canvas Phaser centré et responsive */
+    canvas {
+      display: block;
+      image-rendering: pixelated;        /* Chrome/Edge */
+      image-rendering: crisp-edges;      /* Firefox */
+      image-rendering: -moz-crisp-edges; /* Firefox ancien */
+    }
+ 
+    /* ── Overlay de chargement ── */
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+    }
+ 
+    #loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+ 
+    #loading-screen h1 {
+      color: #f0c040;
+      font-size: clamp(10px, 3vw, 18px);
+      text-align: center;
+      text-shadow: 2px 2px 0 #8b6914;
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+ 
+    #loading-bar-bg {
+      width: 200px;
+      height: 16px;
+      background: #2a2a4e;
+      border: 2px solid #f0c040;
+      border-radius: 0;
+    }
+ 
+    #loading-bar {
+      height: 100%;
+      width: 0%;
+      background: #f0c040;
+      transition: width 0.3s ease;
+    }
+ 
+    #loading-text {
+      color: #a0a0c0;
+      font-size: 8px;
+      margin-top: 12px;
+      letter-spacing: 1px;
+    }
+ 
+    /* ── Formulaire HTML overlay (géré par UIScene) ── */
+    #book-form-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 30, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+ 
+    #book-form-overlay.active {
+      display: flex;
+    }
+ 
+    #book-form {
+      background: #1a1a2e;
+      border: 3px solid #f0c040;
+      padding: 24px 20px;
+      width: 100%;
+      max-width: 360px;
+      image-rendering: pixelated;
+    }
+ 
+    #book-form h2 {
+      color: #f0c040;
+      font-size: 10px;
+      text-align: center;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+ 
+    .form-group {
+      margin-bottom: 14px;
+    }
+ 
+    .form-group label {
+      display: block;
+      color: #a0c0ff;
+      font-size: 7px;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+ 
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 8px;
+      background: #0d0d1a;
+      border: 2px solid #4040a0;
+      color: #ffffff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      outline: none;
+      border-radius: 0;
+    }
+ 
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: #f0c040;
+    }
+ 
+    /* Étoiles de notation */
+    .star-rating {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+ 
+    .star-btn {
+      background: none;
+      border: none;
+      color: #4040a0;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 2px;
+      transition: color 0.1s;
+      line-height: 1;
+    }
+ 
+    .star-btn.active,
+    .star-btn:hover {
+      color: #f0c040;
+    }
+ 
+    /* Boutons du formulaire */
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+ 
+    .btn-primary, .btn-secondary {
+      flex: 1;
+      padding: 10px 4px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      cursor: pointer;
+      border: none;
+      letter-spacing: 1px;
+    }
+ 
+    .btn-primary {
+      background: #f0c040;
+      color: #1a1a2e;
+    }
+ 
+    .btn-primary:hover { background: #ffd060; }
+ 
+    .btn-secondary {
+      background: #2a2a4e;
+      color: #a0a0c0;
+      border: 2px solid #4040a0;
+    }
+ 
+    .btn-secondary:hover { background: #3a3a5e; }
+ 
+    /* Message de succès flash */
+    #toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #2ecc71;
+      color: #0a2010;
+      padding: 10px 16px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      letter-spacing: 1px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 2000;
+      white-space: nowrap;
+    }
+ 
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+ 
+  <!-- Police pixel art Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+</head>
+<body>
+ 
+  <!-- Écran de chargement affiché avant Phaser -->
+  <div id="loading-screen">
+    <h1>PIXEL-READER<br>ODYSSEY</h1>
+    <div id="loading-bar-bg">
+      <div id="loading-bar"></div>
+    </div>
+    <div id="loading-text">CHARGEMENT...</div>
+  </div>
+ 
+  <!-- Conteneur du canvas Phaser -->
+  <div id="game-container"></div>
+ 
+  <!-- Overlay du formulaire d'ajout de livre (HTML natif pour accessibilité mobile) -->
+  <div id="book-form-overlay">
+    <div id="book-form">
+      <h2>+ NOUVEAU LIVRE</h2>
+ 
+      <div class="form-group">
+        <label for="input-title">TITRE</label>
+        <input type="text" id="input-title" placeholder="Ex: Dune" maxlength="60" />
+      </div>
+ 
+      <div class="form-group">
+        <label for="input-author">AUTEUR</label>
+        <input type="text" id="input-author" placeholder="Ex: Frank Herbert" maxlength="60" />
+      </div>
+ 
+      <div class="form-group">
+        <label for="input-pages">NOMBRE DE PAGES</label>
+        <input type="number" id="input-pages" placeholder="Ex: 412" min="1" max="9999" />
+      </div>
+ 
+      <div class="form-group">
+        <label for="input-genre">GENRE</label>
+        <select id="input-genre">
+          <option value="Fantasy">⚔️ Fantasy</option>
+          <option value="Sci-Fi">🚀 Science-Fiction</option>
+          <option value="Mystery">🔍 Policier / Mystère</option>
+          <option value="Romance">💖 Romance</option>
+          <option value="Horror">👻 Horreur</option>
+          <option value="Historical">🏛️ Historique</option>
+          <option value="Biography">📖 Biographie</option>
+          <option value="Self-Help">🌱 Développement perso</option>
+          <option value="Other">📚 Autre</option>
+        </select>
+      </div>
+ 
+      <div class="form-group">
+        <label>NOTE (1-5 ⭐)</label>
+        <div class="star-rating" id="star-rating">
+          <button class="star-btn" data-value="1">★</button>
+          <button class="star-btn" data-value="2">★</button>
+          <button class="star-btn" data-value="3">★</button>
+          <button class="star-btn" data-value="4">★</button>
+          <button class="star-btn" data-value="5">★</button>
+        </div>
+        <input type="hidden" id="input-rating" value="3" />
+      </div>
+ 
+      <div class="form-actions">
+        <button class="btn-secondary" id="btn-cancel">ANNULER</button>
+        <button class="btn-primary" id="btn-submit">CONSTRUIRE !</button>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Toast de notification -->
+  <div id="toast"></div>
+ 
+  <!-- Point d'entrée principal du jeu -->
+  <script type="module" src="src/main.js"></script>
+ 
+  <!-- Enregistrement du Service Worker (PWA offline) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(reg => console.log('[PWA] SW enregistré:', reg.scope))
+          .catch(err => console.warn('[PWA] Echec SW:', err));
+      });
+    }
+  </script>
+ 
+</body>
+</html>
