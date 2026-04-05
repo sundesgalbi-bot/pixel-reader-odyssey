@@ -261,6 +261,17 @@ export class WorldScene extends Phaser.Scene {
     });
   }
  
+  // ── Réagir à l'ajout d'un nouveau livre ───────────────────
+  _onBookAdded({ building, book }) {
+    if (!building || !book) return;
+ 
+    this.buildingSystem.place(building, book, true);
+ 
+    const worldX = building.gridX * TILE_SIZE + TILE_SIZE / 2;
+    const worldY = building.gridY * TILE_SIZE + TILE_SIZE / 2;
+    this.cameras.main.pan(worldX, worldY, 600, 'Sine.easeInOut');
+  }
+ 
   // ── Ambiance : particules et arbres ───────────────────────
   _addAmbience() {
     // Arbres décoratifs
