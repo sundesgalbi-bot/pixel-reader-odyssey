@@ -73,6 +73,7 @@ export const game = new Phaser.Game(config);
 // ── Masquer l'écran de chargement HTML une fois Phaser prêt ──
 // On écoute l'événement 'ready' de Phaser
 game.events.once('ready', () => {
+  console.log('[Main] Phaser ready event reçu');
   const loadingScreen = document.getElementById('loading-screen');
   if (loadingScreen) {
     loadingScreen.classList.add('hidden');

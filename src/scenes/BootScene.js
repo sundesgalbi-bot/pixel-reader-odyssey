@@ -99,8 +99,17 @@ export class BootScene extends Phaser.Scene {
     // Pour ajouter vos propres sprites, décommentez les lignes ci-dessus.
   }
  
+  // ── Masquer l'écran de chargement HTML si nécessaire ─────
+  _hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loading-screen');
+    if (!loadingScreen) return;
+    loadingScreen.classList.add('hidden');
+    setTimeout(() => loadingScreen.remove(), 600);
+  }
+ 
   // ── create : Lancement des scènes principales ──────────────
   create() {
+    console.log('[BootScene] create() démarré');
     // Petit délai pour laisser le temps à l'animation de se terminer
     this.time.delayedCall(400, () => {
       // Lance la scène du monde en arrière-plan
@@ -111,6 +120,9 @@ export class BootScene extends Phaser.Scene {
  
       // Arrête cette scène (elle n'est plus nécessaire)
       this.scene.stop('BootScene');
+ 
+      // Masquage de secours de l'écran de chargement
+      this._hideLoadingScreen();
     });
   }
 }
