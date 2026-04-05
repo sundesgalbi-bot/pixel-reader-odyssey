@@ -39,6 +39,7 @@ export class WorldScene extends Phaser.Scene {
  
     // ── Système de bâtiments ─────────────────────────────────
     this.buildingSystem = new BuildingSystem(this);
+    this.buildingGroup = this.buildingSystem._group;
  
     // ── Génération de la grille de terrain ──────────────────
     this._drawTerrain();
