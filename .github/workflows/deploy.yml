@@ -1,0 +1,66 @@
+# ════════════════════════════════════════════════════════════════
+# Workflow GitHub Actions – Déploiement automatique sur GitHub Pages
+# Déclenché à chaque push sur la branche `main`
+# ════════════════════════════════════════════════════════════════
+ 
+name: Deploy to GitHub Pages
+ 
+on:
+  push:
+    branches:
+      - main          # Se déclenche uniquement sur la branche principale
+  workflow_dispatch:  # Permet de lancer manuellement depuis l'interface GitHub
+ 
+# Permissions nécessaires pour écrire sur gh-pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+ 
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+ 
+    steps:
+      # ── Étape 1 : Récupérer le code source ──────────────────────
+      - name: 📥 Checkout du dépôt
+        uses: actions/checkout@v4
+ 
+      # ── Étape 2 : Vérification de la structure (optionnel) ───────
+      - name: 🔍 Vérifier la structure du projet
+        run: |
+          echo "=== Structure du projet ==="
+          find . -not -path './.git/*' -type f | sort
+          echo ""
+          echo "=== Vérification index.html ==="
+          test -f index.html && echo "✅ index.html trouvé" || echo "❌ index.html manquant !"
+          echo ""
+          echo "=== Vérification manifest.json ==="
+          test -f manifest.json && echo "✅ manifest.json trouvé" || echo "❌ manifest.json manquant !"
+ 
+      # ── Étape 3 : Déploiement sur gh-pages ──────────────────────
+      # On déploie tout le repo racine (pas de build nécessaire,
+      # le projet est 100% vanilla JS + Phaser via CDN)
+      - name: 🚀 Déployer sur GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./          # Déploie tout le contenu du repo
+          publish_branch: gh-pages # Branche cible
+          # Exclure les fichiers inutiles du déploiement
+          exclude_assets: '.github,README.md,.gitignore,*.md'
+          commit_message: "🎮 Deploy Pixel-Reader Odyssey – ${{ github.sha }}"
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
+ 
+      # ── Étape 4 : Afficher l'URL du site déployé ────────────────
+      - name: 🌐 URL du site déployé
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          OWNER=$(echo "${{ github.repository }}" | cut -d'/' -f1)
+          echo ""
+          echo "════════════════════════════════════"
+          echo "✅ Déploiement réussi !"
+          echo "🌐 URL : https://${OWNER}.github.io/${REPO_NAME}/"
+          echo "════════════════════════════════════"

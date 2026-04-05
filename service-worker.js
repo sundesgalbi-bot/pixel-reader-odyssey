@@ -9,8 +9,8 @@
  * ════════════════════════════════════════════════════════════
  */
  
-const CACHE_NAME    = 'pixelreader-v1';
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 2;
+const CACHE_NAME    = `pixelreader-v${CACHE_VERSION}`;
  
 // Fichiers à mettre en cache lors de l'installation
 const PRECACHE_URLS = [
