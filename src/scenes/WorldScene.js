@@ -78,47 +78,112 @@ export class WorldScene extends Phaser.Scene {
   // ── Dessiner le paysage en arrière-plan ──────────────────
   _drawBackground() {
     const bg = this.add.graphics();
-    bg.setScrollFactor(0.3); // parallaxe légère
+    bg.setScrollFactor(0.3);
     bg.setDepth(-20);
- 
+
     const W = this.scale.width;
     const H = this.scale.height;
- 
-    // Ciel dégradé : bleu clair en haut, un peu plus foncé en bas
-    bg.fillStyle(0x5a9fd4, 1);
-    bg.fillRect(0, 0, W * 4, H * 0.6);
-    bg.fillStyle(0x3a7db8, 1);
-    bg.fillRect(0, H * 0.6, W * 4, H * 0.4);
- 
-    // Nuages : formes organiques
-    bg.fillStyle(0xf0e0c0, 0.8);
-    for (let i = 0; i < 8; i++) {
-      const cx = (i * 150 + Math.sin(i) * 100) % (W * 2);
-      const cy = 60 + Math.sin(i * 0.5) * 30;
-      bg.fillCircle(cx, cy, 40);
-      bg.fillCircle(cx + 50, cy - 10, 45);
-      bg.fillCircle(cx + 90, cy, 40);
+
+    // Ciel dégradé magique : violet foncé en bas, rose/magenta en haut
+    bg.fillStyle(0x1a0033, 1);
+    bg.fillRect(0, 0, W * 4, H * 0.2);
+    bg.fillStyle(0x6b0080, 1);
+    bg.fillRect(0, H * 0.2, W * 4, H * 0.4);
+    bg.fillStyle(0xb8389e, 1);
+    bg.fillRect(0, H * 0.4, W * 4, H * 0.3);
+    bg.fillStyle(0xff66cc, 1);
+    bg.fillRect(0, H * 0.7, W * 4, H * 0.3);
+
+    // Étoiles scintillantes
+    bg.fillStyle(0xffffff, 0.9);
+    for (let i = 0; i < 50; i++) {
+      const x = (i * 97 + Math.sin(i * 2) * 200) % (W * 2);
+      const y = (i * 71) % (H * 0.5);
+      const size = 2 + (i % 3);
+      bg.fillRect(x, y, size, size);
     }
- 
-    // Montagne lointaine (orange/marron clair)
-    bg.fillStyle(0xc88844, 1);
+
+    // Spirales galactiques (roses/cyans)
+    bg.lineStyle(2, 0xff33ff, 0.3);
+    for (let i = 0; i < 3; i++) {
+      const centerX = (i * 200 + 100);
+      const centerY = H * 0.25;
+      for (let angle = 0; angle < Math.PI * 4; angle += 0.1) {
+        const radius = angle * 20;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+        if (i === 0) bg.fillCircle(x, y, 1);
+      }
+    }
+
+    // Planètes et sphères
+    const planets = [
+      { x: W * 0.7, y: H * 0.15, r: 35, color: 0x00ffff },
+      { x: W * 1.5, y: H * 0.3, r: 28, color: 0xff99ff },
+      { x: W * 0.2, y: H * 0.4, r: 45, color: 0xffff66 },
+      { x: W * 1.8, y: H * 0.2, r: 32, color: 0x99ffff },
+    ];
+    planets.forEach((p) => {
+      bg.fillStyle(p.color, 1);
+      bg.fillCircle(p.x, p.y, p.r);
+      bg.fillStyle(0xffffff, 0.4);
+      bg.fillCircle(p.x - p.r * 0.3, p.y - p.r * 0.3, p.r * 0.4);
+    });
+
+    // Aurores / lumière
+    bg.fillStyle(0x00ffff, 0.15);
+    for (let y = 0; y < H * 0.6; y += 20) {
+      bg.fillRect(0, y, W * 4, 15);
+    }
+
+    // Montagnes : dégradé rose/bleu
+    bg.fillStyle(0xc084d0, 1);
     const mountainPoints = [];
-    for (let i = 0; i <= 300; i += 30) {
-      mountainPoints.push({ x: i, y: H * 0.55 - Math.sin(i * 0.02) * 40 });
+    for (let i = 0; i <= 300; i += 20) {
+      const height = Math.sin(i * 0.015) * 40 + 60;
+      mountainPoints.push({ x: i, y: H * 0.6 - height });
     }
     mountainPoints.push({ x: 300, y: H });
     mountainPoints.push({ x: 0, y: H });
     bg.fillPoints(mountainPoints, true);
- 
-    // Pics de montagne (plus sombres)
-    bg.fillStyle(0x9d5e3a, 1);
-    for (let i = 0; i < 4; i++) {
-      const peakX = 50 + i * 80;
-      const peakY = H * 0.5 - 60;
-      bg.fillTriangle(peakX - 30, peakY + 60, peakX, peakY, peakX + 30, peakY + 60);
+
+    // Pics de montagne irisés (bleu clair)
+    bg.fillStyle(0x66ffff, 1);
+    for (let i = 0; i < 6; i++) {
+      const peakX = 30 + i * 50;
+      const peakY = H * 0.55;
+      bg.fillTriangle(peakX - 20, peakY + 40, peakX, peakY - 20, peakX + 20, peakY + 40);
+    }
+
+    // Forêt rose au loin
+    bg.fillStyle(0xff99dd, 0.8);
+    for (let i = 0; i < 12; i++) {
+      const x = (i * 70) % (W * 2);
+      const y = H * 0.65 + Math.sin(i * 0.7) * 20;
+      bg.fillCircle(x, y, 18 + (i % 4) * 5);
+    }
+
+    // Rivière brillante (cyan)
+    bg.fillStyle(0x00ffff, 0.6);
+    const riverPoints = [];
+    for (let i = 0; i <= 300; i += 15) {
+      const waveY = H * 0.75 + Math.sin(i * 0.02) * 15;
+      riverPoints.push({ x: i, y: waveY });
+    }
+    for (let i = 300; i >= 0; i -= 15) {
+      riverPoints.push({ x: i, y: H * 0.75 + Math.sin(i * 0.02) * 15 + 8 });
+    }
+    bg.fillPoints(riverPoints, true);
+
+    // Dépôt de la rivière
+    bg.fillStyle(0x99ffff, 0.4);
+    for (let i = 0; i < 20; i++) {
+      const x = (i * 15) % (W * 2);
+      const y = H * 0.75 + Math.sin(i * 0.5) * 10;
+      bg.fillCircle(x, y, 3 + (i % 2) * 2);
     }
   }
- 
+
   // ── Générer les tuiles de terrain ─────────────────────────
   _drawTerrain() {
     const graphics = this.add.graphics();
@@ -128,48 +193,52 @@ export class WorldScene extends Phaser.Scene {
         const px = x * TILE_SIZE;
         const py = y * TILE_SIZE;
  
-        // Alternance de couleurs pour effet damier naturel
+        // Alternance de couleurs roses/violettes magiques
         const isEven   = (x + y) % 2 === 0;
-        const baseColor = isEven ? 0x2d5a27 : 0x3a6e33; // Deux nuances de vert herbe
- 
-        // Tuile de base (herbe)
+        const baseColor = isEven ? 0xc499d8 : 0xdb99e8; // Roses/violettes pâles
+        const accentColor = isEven ? 0xab77c8 : 0xc477d8; // Un peu plus foncés
+
+        // Tuile de base
         graphics.fillStyle(baseColor, 1);
         graphics.fillRect(px, py, TILE_SIZE, TILE_SIZE);
- 
-        // Contour subtil de la grille
-        graphics.lineStyle(1, 0x1a3a15, 0.4);
+
+        // Contour magique
+        graphics.lineStyle(1, accentColor, 0.6);
         graphics.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
- 
-        // Détail aléatoire (brin d'herbe, fleur) avec une seed fixe
+
+        // Détails scintillants : petites cristaux magiques
         const rand = this._pseudoRandom(x * 100 + y);
-        if (rand < 0.08) {
-          // Petite fleur
-          graphics.fillStyle(0xf0e040, 1);
-          graphics.fillRect(px + 14, py + 14, 4, 4);
-        } else if (rand < 0.15) {
-          // Pierre
-          graphics.fillStyle(0x808060, 0.5);
-          graphics.fillRect(px + 10, py + 10, 6, 6);
+        if (rand < 0.05) {
+          // Cristal cyan brillant
+          graphics.fillStyle(0x00ffff, 0.7);
+          graphics.fillRect(px + 12, py + 12, 4, 4);
+          graphics.lineStyle(1, 0x66ffff, 0.8);
+          graphics.strokeRect(px + 12, py + 12, 4, 4);
+        } else if (rand < 0.12) {
+          // Fleur rose
+          graphics.fillStyle(0xff66cc, 0.8);
+          graphics.fillCircle(px + 14, py + 14, 3);
+          graphics.fillStyle(0xffb8f1, 0.6);
+          graphics.fillCircle(px + 14, py + 11, 2);
+        } else if (rand < 0.18) {
+          // Herbe plus claire
+          graphics.fillStyle(0xffc0e0, 0.4);
+          graphics.fillRect(px + 8, px + 8, 8, 3);
         }
       }
     }
- 
-    // Bordure du monde
-    graphics.lineStyle(3, 0x1a3a15, 1);
+
+    // Bordure du monde arc-en-ciel magique
+    graphics.lineStyle(4, 0x00ffff, 0.8);
     graphics.strokeRect(0, 0, GRID_W * TILE_SIZE, GRID_H * TILE_SIZE);
- 
-    // Eau autour du monde (effet d'île)
+
+    // Aura magique around le monde
+    graphics.lineStyle(2, 0xff66cc, 0.3);
+    graphics.strokeRect(-8, -8, GRID_W * TILE_SIZE + 16, GRID_H * TILE_SIZE + 16);
+
+    // Eau magique autour du monde (cyan brillant)
     const waterGraphics = this.add.graphics();
-    waterGraphics.fillStyle(0x1a4a8a, 1);
-    const margin = TILE_SIZE * 3;
-    // Bordures eau
-    waterGraphics.fillRect(-margin, -margin, GRID_W * TILE_SIZE + margin * 2, margin);
-    waterGraphics.fillRect(-margin, GRID_H * TILE_SIZE, GRID_W * TILE_SIZE + margin * 2, margin);
-    waterGraphics.fillRect(-margin, -margin, margin, GRID_H * TILE_SIZE + margin * 2);
-    waterGraphics.fillRect(GRID_W * TILE_SIZE, -margin, margin, GRID_H * TILE_SIZE + margin * 2);
- 
-    // Déplacer l'eau derrière la grille
-    waterGraphics.setDepth(-10);
+    waterGraphics.fillStyle(0x00ffcc, 0.6);
     graphics.setDepth(0);
   }
  
@@ -321,37 +390,63 @@ export class WorldScene extends Phaser.Scene {
  
   // ── Ambiance : particules et arbres ───────────────────────
   _addAmbience() {
-    // Arbres décoratifs
+    // Arbres décoratifs roses/violets magiques
     const treeGraphics = this.add.graphics();
     treeGraphics.setDepth(1);
- 
-    for (let i = 0; i < 15; i++) {
+
+    for (let i = 0; i < 18; i++) {
       const rand = this._pseudoRandom(i * 777);
       const x    = Math.floor(rand * GRID_W);
       const y    = Math.floor(this._pseudoRandom(i * 333) * GRID_H);
- 
+
       // Éviter les bords et le centre (zone de construction)
       if (x < 2 || x > GRID_W - 3 || y < 1 || y > GRID_H - 2) continue;
- 
+
       // Vérifier que la cellule est libre dans la sauvegarde
       const data     = saveSystem.getData();
       const occupied = data.world.buildings.some(b => b.gridX === x && b.gridY === y);
       if (occupied) continue;
- 
+
       const px = x * TILE_SIZE + TILE_SIZE / 2;
       const py = y * TILE_SIZE + TILE_SIZE / 2;
- 
-      // Tronc
-      treeGraphics.fillStyle(0x8b4513, 1);
-      treeGraphics.fillRect(px - 3, py - 8, 6, 10);
- 
-      // Feuillage (cercles superposés)
-      const green = this._pseudoRandom(i * 99) < 0.3 ? 0x2d8a2d : 0x3da03d;
-      treeGraphics.fillStyle(green, 1);
-      treeGraphics.fillCircle(px, py - 14, 10);
-      treeGraphics.fillStyle(0x50c050, 0.7);
-      treeGraphics.fillCircle(px - 4, py - 12, 7);
-      treeGraphics.fillCircle(px + 4, py - 16, 7);
+
+      // Tronc rose/marron
+      treeGraphics.fillStyle(0xb8619a, 1);
+      treeGraphics.fillRect(px - 4, py - 6, 8, 12);
+
+      // Feuillage rose/magenta (cercles superposés)
+      const pink = this._pseudoRandom(i * 99) < 0.5 ? 0xff99dd : 0xff66cc;
+      treeGraphics.fillStyle(pink, 1);
+      treeGraphics.fillCircle(px, py - 14, 11);
+      treeGraphics.fillStyle(0xffb3e6, 0.8);
+      treeGraphics.fillCircle(px - 5, py - 12, 8);
+      treeGraphics.fillCircle(px + 5, py - 16, 8);
+
+      // Lueur magique autour de l'arbre
+      treeGraphics.fillStyle(0x00ffff, 0.2);
+      treeGraphics.fillCircle(px, py - 10, 16);
+    }
+
+    // Particules magiques (points brillants qui flottent)
+    for (let i = 0; i < 6; i++) {
+      const px = Math.random() * (GRID_W * TILE_SIZE);
+      const py = Math.random() * (GRID_H * TILE_SIZE);
+      const particle = this.add.graphics();
+      particle.setDepth(50);
+
+      const color = [0x00ffff, 0xff99ff, 0xffff66][i % 3];
+      particle.fillStyle(color, 0.8);
+      particle.fillRect(px - 1, py - 1, 2, 2);
+
+      this.tweens.add({
+        targets: particle,
+        y: py - 30,
+        alpha: 0,
+        duration: 2000 + i * 300,
+        ease: 'Sine.easeIn',
+        repeat: -1,
+        delay: i * 500,
+      });
     }
   }
  
