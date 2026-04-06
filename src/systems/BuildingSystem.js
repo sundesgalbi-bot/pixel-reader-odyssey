@@ -232,7 +232,15 @@ export class BuildingSystem {
     // ── Étoile (note 5/5) ────────────────────────────────────
     if (rating >= 5) {
       g.fillStyle(0xffd700, 1);
-      g.fillStar(baseX + bW / 2, baseY - (h >= 3 ? 30 : 18), 5, 5, 3);
+      const starX = baseX + bW / 2;
+      const starY = baseY - (h >= 3 ? 30 : 18);
+      const points = [];
+      for (let i = 0; i < 10; i++) {
+        const angle = -Math.PI / 2 + i * (Math.PI / 5);
+        const radius = (i % 2 === 0) ? 5 : 2.5;
+        points.push({ x: starX + Math.cos(angle) * radius, y: starY + Math.sin(angle) * radius });
+      }
+      g.fillPoints(points, true);
     }
   }
  
