@@ -64,6 +64,12 @@ export class BookScene extends Phaser.Scene {
       fontSize:   '10px',
       color:      '#f0c040',
     }).setOrigin(0.5, 0).setDepth(10);
+ 
+    this.add.text(W / 2, 30, 'Ton univers de lecture en pixel art.', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize:   '6px',
+      color:      '#c4b0ff',
+    }).setOrigin(0.5, 0).setDepth(10);
   }
  
   // ── Statistiques du joueur ─────────────────────────────────

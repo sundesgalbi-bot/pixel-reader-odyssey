@@ -239,7 +239,7 @@
  
     .form-group label {
       display: block;
-      color: #a0c0ff;
+      color: #d5b2ff;
       font-size: 7px;
       letter-spacing: 1px;
       margin-bottom: 6px;
@@ -249,9 +249,9 @@
     .form-group select {
       width: 100%;
       padding: 8px;
-      background: #0d0d1a;
-      border: 2px solid #4040a0;
-      color: #ffffff;
+      background: #170828;
+      border: 2px solid #5b3d83;
+      color: #f8e8ff;
       font-family: 'Press Start 2P', monospace;
       font-size: 8px;
       outline: none;
@@ -260,7 +260,8 @@
  
     .form-group input:focus,
     .form-group select:focus {
-      border-color: #f0c040;
+      border-color: #ff8bdc;
+      box-shadow: 0 0 0 3px rgba(255, 139, 220, 0.18);
     }
  
     /* Étoiles de notation */
@@ -299,24 +300,33 @@
       font-family: 'Press Start 2P', monospace;
       font-size: 7px;
       cursor: pointer;
-      border: none;
       letter-spacing: 1px;
+      border-radius: 0;
+      transition: transform 0.12s ease, background 0.12s ease;
     }
  
     .btn-primary {
-      background: #f0c040;
-      color: #1a1a2e;
+      background: #ff79c6;
+      color: #1a0a2a;
+      border: 2px solid #ffb8f1;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
     }
  
-    .btn-primary:hover { background: #ffd060; }
+    .btn-primary:hover {
+      background: #ffc0eb;
+      transform: translateY(-1px);
+    }
  
     .btn-secondary {
-      background: #2a2a4e;
-      color: #a0a0c0;
-      border: 2px solid #4040a0;
+      background: #321251;
+      color: #dcbfff;
+      border: 2px solid #6b3d8c;
     }
  
-    .btn-secondary:hover { background: #3a3a5e; }
+    .btn-secondary:hover {
+      background: #51237d;
+      transform: translateY(-1px);
+    }
  
     /* Message de succès flash */
     #toast {
@@ -324,8 +334,8 @@
       bottom: 80px;
       left: 50%;
       transform: translateX(-50%) translateY(20px);
-      background: #2ecc71;
-      color: #0a2010;
+      background: linear-gradient(180deg, #ff8bdc 0%, #ff66a2 100%);
+      color: #22071e;
       padding: 10px 16px;
       font-family: 'Press Start 2P', monospace;
       font-size: 7px;
@@ -335,6 +345,8 @@
       transition: opacity 0.3s, transform 0.3s;
       z-index: 2000;
       white-space: nowrap;
+      border: 2px solid #ffb8f1;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
     }
  
     #toast.show {
@@ -366,7 +378,7 @@
     <div id="player-name-box">
       <h2>BIENVENUE</h2>
       <div class="form-group">
-        <label for="input-player-name">TON PSEUDO</label>
+        <label for="input-player-name">CHOISIS TON PSEUDO</label>
         <input type="text" id="input-player-name" placeholder="Ex: Luna" maxlength="20" />
       </div>
       <div class="form-actions">
@@ -378,20 +390,20 @@
   <!-- Overlay du formulaire d'ajout de livre (HTML natif pour accessibilité mobile) -->
   <div id="book-form-overlay">
     <div id="book-form">
-      <h2>+ NOUVEAU LIVRE</h2>
+      <h2>+ AJOUTER UN LIVRE</h2>
  
       <div class="form-group">
         <label for="input-title">TITRE</label>
-        <input type="text" id="input-title" placeholder="Ex: Dune" maxlength="60" />
+        <input type="text" id="input-title" placeholder="Ex: Une étoile filante" maxlength="60" />
       </div>
  
       <div class="form-group">
         <label for="input-author">AUTEUR</label>
-        <input type="text" id="input-author" placeholder="Ex: Frank Herbert" maxlength="60" />
+        <input type="text" id="input-author" placeholder="Ex: L. Lumineuse" maxlength="60" />
       </div>
  
       <div class="form-group">
-        <label for="input-pages">NOMBRE DE PAGES</label>
+        <label for="input-pages">PAGES</label>
         <input type="number" id="input-pages" placeholder="Ex: 412" min="1" max="9999" />
       </div>
  

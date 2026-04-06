@@ -145,15 +145,24 @@ export class UIScene extends Phaser.Scene {
       const button = this.add.text(x, y, `${config.emoji} ${config.label}`, {
         fontFamily: '"Press Start 2P", monospace',
         fontSize:   '6px',
-        color:      '#f4c0ff',
-        backgroundColor: '#2a0e45',
+        color:      '#e6d4ff',
+        backgroundColor: '#29144b',
         padding: { x: 6, y: 4 },
       }).setInteractive({ useHandCursor: true });
       button.genre = genre;
       button.on('pointerdown', () => this._selectGenre(genre));
       this._hud.genreButtons.push(button);
-      x += button.width + 10;
+      x += button.width + 12;
     });
+ 
+    const hint = this.add.text(10, 88, 'Choisis un style, puis clique sur + pour poser ton bâtiment.', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize:   '6px',
+      color:      '#d1b2ff',
+      wordWrap:   { width: 360 },
+    });
+    hint.setDepth(10);
+    this._hud.selectorHint = hint;
  
     this._selectGenre(this._selectedGenre);
   }
