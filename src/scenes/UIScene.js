@@ -64,6 +64,9 @@ export class UIScene extends Phaser.Scene {
  
   // ── Barre de statut en haut de l'écran ────────────────────
   _createTopBar(W) {
+    // Avatar du joueur (coin haut gauche)
+    this._createPlayerAvatar(W);
+ 
     // Fond semi-transparent de la barre
     const barBg = this.add.graphics();
     barBg.fillStyle(0x0a0a1e, 0.85);
@@ -116,6 +119,61 @@ export class UIScene extends Phaser.Scene {
     this._hud.xpBar = this.add.graphics();
  
     this._drawXPBar(0);
+  }
+ 
+  // ── Avatar pixel art du joueur ────────────────────────────
+  _createPlayerAvatar(W) {
+    const avatarPanel = this.add.graphics();
+    avatarPanel.fillStyle(0x1e0a32, 0.95);
+    avatarPanel.fillRect(85, 5, 70, 38);
+    avatarPanel.lineStyle(2, 0xff79c6, 1);
+    avatarPanel.strokeRect(85, 5, 70, 38);
+    avatarPanel.setScrollFactor(0);
+    this._hud.avatarPanel = avatarPanel;
+ 
+    // Dessiner un petit avatar pixel art : cheveux violets, visage rose, vêtements colorés
+    this._drawPixelAvatar(120, 24);
+  }
+ 
+  _drawPixelAvatar(centerX, centerY) {
+    const pixelSize = 2;
+    const g = this.add.graphics();
+    g.setScrollFactor(0);
+ 
+    // Cheveux violets (en haut)
+    g.fillStyle(0xff66cc, 1);
+    for (let x = -6; x <= 6; x += pixelSize) {
+      for (let y = -8; y <= -4; y += pixelSize) {
+        if (Math.abs(x) <= 6) g.fillRect(centerX + x, centerY + y, pixelSize, pixelSize);
+      }
+    }
+ 
+    // Visage rose pêche
+    g.fillStyle(0xffe5d8, 1);
+    for (let x = -4; x <= 4; x += pixelSize) {
+      for (let y = -2; y <= 4; y += pixelSize) {
+        g.fillRect(centerX + x, centerY + y, pixelSize, pixelSize);
+      }
+    }
+ 
+    // Yeux
+    g.fillStyle(0x000000, 1);
+    g.fillRect(centerX - 3, centerY, pixelSize, pixelSize);
+    g.fillRect(centerX + 1, centerY, pixelSize, pixelSize);
+ 
+    // Sourire
+    g.fillRect(centerX - 2, centerY + 2, pixelSize, pixelSize);
+    g.fillRect(centerX + 1, centerY + 2, pixelSize, pixelSize);
+ 
+    // Vêtements : rouge/orange (tube top)
+    g.fillStyle(0xff6b6b, 1);
+    for (let x = -5; x <= 5; x += pixelSize) {
+      for (let y = 4; y <= 8; y += pixelSize) {
+        g.fillRect(centerX + x, centerY + y, pixelSize, pixelSize);
+      }
+    }
+ 
+    this._hud.avatar = g;
   }
  
   // ── Barre XP colorée ──────────────────────────────────────

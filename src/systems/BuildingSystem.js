@@ -53,18 +53,35 @@ export class BuildingSystem {
     const hitH   = TILE_SIZE * config.height + 8;
     const hitY   = -(hitH / 2);
     const hitZone = this.scene.add.rectangle(0, hitY, TILE_SIZE, hitH, 0xffffff, 0);
-    hitZone.setInteractive({ useHandCursor: true });
+    hitZone.setInteractive({ useHandCursor: true, draggable: true });
     hitZone.on('pointerdown', () => {
       this.scene.events.emit('building-tapped', { building, book, config, worldX, worldY });
     });
+    // Drag & drop pour déplacer les bâtiments
+    hitZone.on('dragstart', () => {
+      container._dragStart = { x: container.x, y: container.y };
+      this.scene.tweens.add({ targets: container, scaleX: 1.1, scaleY: 1.1, duration: 100 });
+    });
+    hitZone.on('drag', (pointer) => {
+      container.x = pointer.worldX;
+      container.y = pointer.worldY;
+    });
+    hitZone.on('dragend', () => {
+      this._snapBuildingToGrid(container, building, hitZone);
+      this.scene.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 100 });
+    });
     // Highlight au survol
     hitZone.on('pointerover', () => {
-      icon.setScale(1.3);
-      this.scene.tweens.add({ targets: container, scaleX: 1.05, scaleY: 1.05, duration: 100 });
+      if (!hitZone.isDown) {
+        icon.setScale(1.3);
+        this.scene.tweens.add({ targets: container, scaleX: 1.05, scaleY: 1.05, duration: 100 });
+      }
     });
     hitZone.on('pointerout',  () => {
-      icon.setScale(1);
-      this.scene.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 100 });
+      if (!hitZone.isDown) {
+        icon.setScale(1);
+        this.scene.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 100 });
+      }
     });
     container.add(hitZone);
  
@@ -275,5 +292,63 @@ export class BuildingSystem {
         onComplete: () => g.destroy(),
       });
     }
+  }
+ 
+  // ── Snapper un bâtiment à la grille après drag ────────────
+  _snapBuildingToGrid(container, building, hitZone) {
+    const GRID_W = 20;
+    const GRID_H = 12;
+    const gridX = Math.round(container.x / TILE_SIZE - 0.5);
+    const gridY = Math.round(container.y / TILE_SIZE - 0.5);
+ 
+    // Vérifier que la position est valide
+    if (gridX < 1 || gridX >= GRID_W - 1 || gridY < 1 || gridY >= GRID_H - 1) {
+      // Position invalide : revenir à l'ancienne position
+      this.scene.tweens.add({
+        targets: container,
+        x: building.gridX * TILE_SIZE + TILE_SIZE / 2,
+        y: building.gridY * TILE_SIZE + TILE_SIZE / 2,
+        duration: 200,
+        ease: 'Back.easeOut',
+      });
+      return;
+    }
+ 
+    // Vérifier qu'aucun autre bâtiment n'occupe cette cellule
+    const data = saveSystem.getData();
+    const occupied = data.world.buildings.some(b => 
+      b.id !== building.id && b.gridX === gridX && b.gridY === gridY
+    );
+ 
+    if (occupied) {
+      // Cellule occupée : revenir à l'ancienne position
+      this.scene.tweens.add({
+        targets: container,
+        x: building.gridX * TILE_SIZE + TILE_SIZE / 2,
+        y: building.gridY * TILE_SIZE + TILE_SIZE / 2,
+        duration: 200,
+        ease: 'Back.easeOut',
+      });
+      return;
+    }
+ 
+    // Mettre à jour la position du bâtiment et le snapper
+    building.gridX = gridX;
+    building.gridY = gridY;
+    const newX = gridX * TILE_SIZE + TILE_SIZE / 2;
+    const newY = gridY * TILE_SIZE + TILE_SIZE / 2;
+ 
+    this.scene.tweens.add({
+      targets: container,
+      x: newX,
+      y: newY,
+      duration: 200,
+      ease: 'Back.easeOut',
+      onComplete: () => {
+        container.setDepth(building.gridY);
+        // Sauvegarder la nouvelle position
+        saveSystem.save(data);
+      },
+    });
   }
 }
