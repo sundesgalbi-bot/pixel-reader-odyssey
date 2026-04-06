@@ -120,8 +120,9 @@
     }
  
     #book-form {
-      background: #1a1a2e;
-      border: 3px solid #f0c040;
+      background: linear-gradient(180deg, #2e0842 0%, #460b5f 100%);
+      border: 3px solid #ff79c6;
+      box-shadow: 0 0 0 4px rgba(255, 121, 198, 0.14);
       padding: 24px 20px;
       width: 100%;
       max-width: 360px;
@@ -129,11 +130,107 @@
     }
  
     #book-form h2 {
-      color: #f0c040;
+      color: #ffb8f1;
       font-size: 10px;
       text-align: center;
       margin-bottom: 20px;
       letter-spacing: 2px;
+      text-shadow: 1px 1px 0 #6a1c5a;
+    }
+
+    #player-name-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(50, 10, 60, 0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1100;
+      padding: 16px;
+    }
+
+    #player-name-overlay.active {
+      display: flex;
+    }
+
+    #player-name-box {
+      background: linear-gradient(180deg, #36104f 0%, #501671 100%);
+      border: 3px solid #ff79c6;
+      padding: 22px 18px;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+      box-shadow: 0 0 0 4px rgba(255, 121, 198, 0.12);
+    }
+
+    #player-name-box h2 {
+      color: #ffb8f1;
+      font-size: 11px;
+      margin-bottom: 16px;
+      letter-spacing: 2px;
+    }
+
+    .genre-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #2a0e45;
+      border: 2px solid #5f2a7f;
+      color: #f4c0ff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      padding: 6px 8px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      user-select: none;
+    }
+
+    .genre-button.active,
+    .genre-button:hover {
+      background: #ff79c6;
+      border-color: #ffb8f1;
+      color: #1a0a2a;
+    }
+
+    #side-book-panel {
+      position: fixed;
+      top: 50px;
+      right: 10px;
+      width: 170px;
+      min-height: 180px;
+      background: rgba(30, 10, 50, 0.95);
+      border: 2px solid #ff79c6;
+      padding: 10px;
+      z-index: 50;
+      font-family: 'Press Start 2P', monospace;
+      color: #f4c0ff;
+      pointer-events: none;
+    }
+
+    #side-book-panel h3 {
+      font-size: 8px;
+      margin-bottom: 8px;
+      color: #ffb8f1;
+      text-align: center;
+    }
+
+    #side-book-panel .book-item {
+      margin-bottom: 8px;
+      font-size: 6px;
+      line-height: 1.2;
+      color: #d7c0ff;
+    }
+
+    #side-book-panel .book-link {
+      display: inline-block;
+      width: 100%;
+      margin-top: 8px;
+      font-size: 6px;
+      color: #ffb8f1;
+      text-align: center;
+      text-decoration: underline;
+      pointer-events: auto;
+      cursor: pointer;
     }
  
     .form-group {
@@ -263,6 +360,20 @@
  
   <!-- Conteneur du canvas Phaser -->
   <div id="game-container"></div>
+ 
+  <!-- Overlay du pseudo joueur à la connexion -->
+  <div id="player-name-overlay">
+    <div id="player-name-box">
+      <h2>BIENVENUE</h2>
+      <div class="form-group">
+        <label for="input-player-name">TON PSEUDO</label>
+        <input type="text" id="input-player-name" placeholder="Ex: Luna" maxlength="20" />
+      </div>
+      <div class="form-actions">
+        <button class="btn-primary" id="btn-save-name">COMMENCER</button>
+      </div>
+    </div>
+  </div>
  
   <!-- Overlay du formulaire d'ajout de livre (HTML natif pour accessibilité mobile) -->
   <div id="book-form-overlay">

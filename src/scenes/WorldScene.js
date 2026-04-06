@@ -62,9 +62,9 @@ export class WorldScene extends Phaser.Scene {
     this._setupCameraControls();
  
     // ── Écouter les événements ───────────────────────────────
-    this.events.on('book-added', this._onBookAdded, this);
-    this.game.events.on('book-added', this._onBookAdded, this);
-    this.events.on('building-tapped', this._onBuildingTapped, this);
+    this.events.on('book-added', (payload) => this._onBookAdded(payload));
+    this.game.events.on('book-added', (payload) => this._onBookAdded(payload));
+    this.events.on('building-tapped', (payload) => this._onBuildingTapped(payload));
  
     // ── Ambiance : animation de fond (étoiles scintillantes) ─
     this._addAmbience();

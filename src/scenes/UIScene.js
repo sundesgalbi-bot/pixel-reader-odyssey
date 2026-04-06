@@ -14,7 +14,7 @@
  
 import { saveSystem }       from '../systems/SaveSystem.js';
 import { RewardSystem }     from '../systems/RewardSystem.js';
-import { calculateRewards, calculateLevel } from '../config/GameConfig.js';
+import { calculateRewards, calculateLevel, GENRE_BUILDINGS } from '../config/GameConfig.js';
  
 export class UIScene extends Phaser.Scene {
   constructor() {
@@ -28,6 +28,7 @@ export class UIScene extends Phaser.Scene {
  
     // Note actuelle dans le formulaire
     this._currentRating = 3;
+    this._selectedGenre = 'Romance';
   }
  
   // ── create : Construction du HUD ──────────────────────────
@@ -37,14 +38,23 @@ export class UIScene extends Phaser.Scene {
     // ── Barre supérieure ─────────────────────────────────────
     this._createTopBar(W);
  
+    // ── Sélection de style / bâtiment girly ───────────────────
+    this._createBuildingSelector(W);
+ 
+    // ── Panneau des livres sur le côté ───────────────────────
+    this._createSideBookPanel(W);
+ 
     // ── Bouton flottant "+" ───────────────────────────────────
     this._createAddButton(W);
  
     // ── Attacher les événements du formulaire HTML ────────────
     this._bindFormEvents();
+    this._bindNameOverlayEvents();
+    this._checkPlayerName();
  
     // ── Mise à jour initiale du HUD ───────────────────────────
     this._refreshHUD();
+    this._refreshSidePanel();
  
     // ── Écouter les redimensionnements ────────────────────────
     this.scale.on('resize', this._onResize, this);
@@ -62,8 +72,15 @@ export class UIScene extends Phaser.Scene {
     barBg.strokeRect(0, 35, W, 1);
     this._hud.barBg = barBg;
  
+    // ── Pseudo du joueur ─────────────────────────────────────
+    this._hud.nameLabel = this.add.text(8, 8, 'Hello, Lecteur', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize:   '6px',
+      color:      '#ffb8f1',
+    });
+ 
     // ── XP ────────────────────────────────────────────────────
-    this._hud.xpLabel = this.add.text(8, 8, '⚡ XP: 0', {
+    this._hud.xpLabel = this.add.text(8, 18, '⚡ XP: 0', {
       fontFamily: '"Press Start 2P", monospace',
       fontSize:   '7px',
       color:      '#80d0ff',
@@ -107,6 +124,166 @@ export class UIScene extends Phaser.Scene {
     this._hud.xpBar.clear();
     this._hud.xpBar.fillStyle(0x60a0ff, 1);
     this._hud.xpBar.fillRect(0, 36, W * progress, 4);
+  }
+ 
+  // ── Sélectionne un style de bâtiment/gendre de livre ─────────
+  _createBuildingSelector(W) {
+    const label = this.add.text(8, 42, 'Style de bâtiment :', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize:   '7px',
+      color:      '#ffb8f1',
+    });
+    this._hud.selectorLabel = label;
+ 
+    const genres = ['Romance', 'Fantasy', 'Sci-Fi', 'Mystery', 'Self-Help'];
+    let x = 10;
+    const y = 60;
+    this._hud.genreButtons = [];
+ 
+    genres.forEach((genre) => {
+      const config = GENRE_BUILDINGS[genre] || GENRE_BUILDINGS.Other;
+      const button = this.add.text(x, y, `${config.emoji} ${config.label}`, {
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize:   '6px',
+        color:      '#f4c0ff',
+        backgroundColor: '#2a0e45',
+        padding: { x: 6, y: 4 },
+      }).setInteractive({ useHandCursor: true });
+      button.genre = genre;
+      button.on('pointerdown', () => this._selectGenre(genre));
+      this._hud.genreButtons.push(button);
+      x += button.width + 10;
+    });
+ 
+    this._selectGenre(this._selectedGenre);
+  }
+ 
+  // ── Panneau de livres sur le côté ─────────────────────────
+  _createSideBookPanel(W) {
+    const panelWidth = 170;
+    const panelX = W - panelWidth - 10;
+    const panelY = 50;
+    const panelBg = this.add.graphics();
+    panelBg.fillStyle(0x1e0a32, 0.95);
+    panelBg.fillRect(panelX, panelY, panelWidth, 180);
+    panelBg.lineStyle(2, 0xff79c6, 1);
+    panelBg.strokeRect(panelX, panelY, panelWidth, 180);
+    panelBg.setScrollFactor(0);
+    this._hud.sidePanelBg = panelBg;
+ 
+    const title = this.add.text(panelX + panelWidth / 2, panelY + 8, '📚 MES LIVRES', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize:   '8px',
+      color:      '#ffb8f1',
+    }).setOrigin(0.5, 0);
+    title.setScrollFactor(0);
+    this._hud.sidePanelTitle = title;
+ 
+    this._hud.sideItems = [];
+    for (let i = 0; i < 3; i += 1) {
+      const item = this.add.text(panelX + 8, panelY + 30 + i * 45, '', {
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize:   '6px',
+        color:      '#d7c0ff',
+        wordWrap:   { width: panelWidth - 16 },
+      }).setScrollFactor(0);
+      this._hud.sideItems.push(item);
+    }
+ 
+    const openLibrary = this.add.text(panelX + panelWidth / 2, panelY + 160, 'Voir toute la bibliothèque', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize:   '6px',
+      color:      '#ffb8f1',
+      align:      'center',
+      wordWrap:   { width: panelWidth - 12 },
+    }).setOrigin(0.5, 0).setInteractive({ useHandCursor: true });
+    openLibrary.on('pointerdown', () => this.scene.launch('BookScene'));
+    openLibrary.on('pointerover', () => openLibrary.setColor('#fff5ff'));
+    openLibrary.on('pointerout', () => openLibrary.setColor('#ffb8f1'));
+    openLibrary.setScrollFactor(0);
+    this._hud.sideLibraryLink = openLibrary;
+  }
+ 
+  _refreshSidePanel() {
+    const data = saveSystem.getData();
+    const books = [...data.books].reverse().slice(0, 3);
+ 
+    if (books.length === 0) {
+      this._hud.sideItems.forEach((item, index) => {
+        item.setText(index === 0 ? 'Aucun livre pour le moment...' : '');
+      });
+      return;
+    }
+ 
+    this._hud.sideItems.forEach((item, index) => {
+      const book = books[index];
+      if (!book) {
+        item.setText('');
+        return;
+      }
+      const config = GENRE_BUILDINGS[book.genre] || GENRE_BUILDINGS.Other;
+      const shortTitle = book.title.length > 18 ? book.title.substring(0, 16) + '…' : book.title;
+      const text = `${config.emoji} ${shortTitle}\n${book.pages}p • ${'★'.repeat(book.rating)}${'☆'.repeat(5 - book.rating)}`;
+      item.setText(text);
+    });
+  }
+ 
+  _selectGenre(genre) {
+    this._selectedGenre = genre;
+    this._hud.genreButtons?.forEach((button) => {
+      const isActive = button.genre === genre;
+      button.setStyle({
+        backgroundColor: isActive ? '#ff79c6' : '#2a0e45',
+        color:           isActive ? '#1a0a2a' : '#f4c0ff',
+        borderColor:     isActive ? '#ffb8f1' : '#5f2a7f',
+      });
+    });
+    const genreSelect = document.getElementById('input-genre');
+    if (genreSelect) genreSelect.value = genre;
+  }
+ 
+  _checkPlayerName() {
+    const data = saveSystem.getData();
+    const name = data.player?.name || '';
+    if (!name || name === 'Lecteur') {
+      this._openNameOverlay();
+    } else {
+      if (this._hud.nameLabel) this._hud.nameLabel.setText(`Hello, ${name}`);
+    }
+  }
+ 
+  _openNameOverlay() {
+    const overlay = document.getElementById('player-name-overlay');
+    if (overlay) {
+      overlay.classList.add('active');
+      setTimeout(() => {
+        document.getElementById('input-player-name')?.focus();
+      }, 100);
+    }
+  }
+ 
+  _bindNameOverlayEvents() {
+    const saveBtn = document.getElementById('btn-save-name');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => this._savePlayerName());
+    }
+    const input = document.getElementById('input-player-name');
+    if (input) {
+      input.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') this._savePlayerName();
+      });
+    }
+  }
+ 
+  _savePlayerName() {
+    const input = document.getElementById('input-player-name');
+    const name = input?.value.trim() || 'Lecteur';
+    const data = saveSystem.getData();
+    data.player.name = name;
+    saveSystem.save(data);
+    if (this._hud.nameLabel) this._hud.nameLabel.setText(`Hello, ${name}`);
+    const overlay = document.getElementById('player-name-overlay');
+    if (overlay) overlay.classList.remove('active');
   }
  
   // ── Bouton flottant "+" en bas à droite ───────────────────
@@ -167,6 +344,8 @@ export class UIScene extends Phaser.Scene {
  
   // ── Ouvrir le formulaire HTML d'ajout de livre ────────────
   _openForm() {
+    const genreSelect = document.getElementById('input-genre');
+    if (genreSelect) genreSelect.value = this._selectedGenre;
     const overlay = document.getElementById('book-form-overlay');
     if (overlay) {
       overlay.classList.add('active');
@@ -193,7 +372,7 @@ export class UIScene extends Phaser.Scene {
       if (el) el.value = '';
     });
     const genre = document.getElementById('input-genre');
-    if (genre) genre.selectedIndex = 0;
+    if (genre) genre.value = this._selectedGenre;
     this._setRating(3);
   }
  
@@ -218,6 +397,15 @@ export class UIScene extends Phaser.Scene {
         this._setRating(Number(btn.dataset.value));
       });
     });
+ 
+    // Changement de genre via le formulaire
+    const genreSelect = document.getElementById('input-genre');
+    if (genreSelect) {
+      genreSelect.value = this._selectedGenre;
+      genreSelect.addEventListener('change', () => {
+        this._selectedGenre = genreSelect.value;
+      });
+    }
  
     // Initialiser la notation à 3 étoiles
     this._setRating(3);
@@ -278,6 +466,7 @@ export class UIScene extends Phaser.Scene {
  
     // ── Rafraîchir le HUD ─────────────────────────────────
     this._refreshHUD();
+    this._refreshSidePanel();
  
     // ── Afficher la notification de récompenses ───────────
     this._showRewardNotification(rewards, title);
@@ -378,6 +567,10 @@ export class UIScene extends Phaser.Scene {
     const data       = saveSystem.getData();
     const levelInfo  = calculateLevel(data.player.xp);
  
+    if (this._hud.nameLabel) {
+      const name = data.player?.name || 'Lecteur';
+      this._hud.nameLabel.setText(`Hello, ${name}`);
+    }
     if (this._hud.xpLabel) {
       this._hud.xpLabel.setText(`⚡ ${data.player.xp} XP`);
     }
@@ -388,7 +581,7 @@ export class UIScene extends Phaser.Scene {
       this._hud.levelLabel.setText(`Niv.${levelInfo.level}`);
     }
  
-    this._drawXPBar(levelInfo.progress);
+    this._drawXPBar(levelInfo.progress || 0);
   }
  
   // ── Redimensionnement (changement d'orientation) ──────────
