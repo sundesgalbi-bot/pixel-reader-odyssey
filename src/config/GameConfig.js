@@ -32,8 +32,11 @@ export const GENRE_BUILDINGS = {
 export function calculateLevel(xp) {
   const level = Math.floor(xp / 100) + 1;
   const xpForNext = level * 100;
+  const xpThisLevel = xp - (level - 1) * 100;
+  const xpToNext = xpForNext - xp;
+  const progress = Math.max(0, Math.min(1, xpThisLevel / 100));
   const levelName = `Niveau ${level}`;
-  return { level, xpForNext, levelName };
+  return { level, xpForNext, levelName, xpThisLevel, xpToNext, progress };
 }
 
 // ── Calcul des récompenses pour un livre ──────────────────
