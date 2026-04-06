@@ -37,6 +37,9 @@ export class WorldScene extends Phaser.Scene {
   create() {
     this.cameras.main.setBackgroundColor('#1a2a3a');
  
+    // ── Fond paysage : montagnes, ciel, nuages ───────────────
+    this._drawBackground();
+ 
     // ── Système de bâtiments ─────────────────────────────────
     this.buildingSystem = new BuildingSystem(this);
     this.buildingGroup = this.buildingSystem._group;
@@ -70,6 +73,50 @@ export class WorldScene extends Phaser.Scene {
     this._addAmbience();
  
     console.log('[WorldScene] ✅ Monde chargé.');
+  }
+ 
+  // ── Dessiner le paysage en arrière-plan ──────────────────
+  _drawBackground() {
+    const bg = this.add.graphics();
+    bg.setScrollFactor(0.3); // parallaxe légère
+    bg.setDepth(-20);
+ 
+    const W = this.scale.width;
+    const H = this.scale.height;
+ 
+    // Ciel dégradé : bleu clair en haut, un peu plus foncé en bas
+    bg.fillStyle(0x5a9fd4, 1);
+    bg.fillRect(0, 0, W * 4, H * 0.6);
+    bg.fillStyle(0x3a7db8, 1);
+    bg.fillRect(0, H * 0.6, W * 4, H * 0.4);
+ 
+    // Nuages : formes organiques
+    bg.fillStyle(0xf0e0c0, 0.8);
+    for (let i = 0; i < 8; i++) {
+      const cx = (i * 150 + Math.sin(i) * 100) % (W * 2);
+      const cy = 60 + Math.sin(i * 0.5) * 30;
+      bg.fillCircle(cx, cy, 40);
+      bg.fillCircle(cx + 50, cy - 10, 45);
+      bg.fillCircle(cx + 90, cy, 40);
+    }
+ 
+    // Montagne lointaine (orange/marron clair)
+    bg.fillStyle(0xc88844, 1);
+    const mountainPoints = [];
+    for (let i = 0; i <= 300; i += 30) {
+      mountainPoints.push({ x: i, y: H * 0.55 - Math.sin(i * 0.02) * 40 });
+    }
+    mountainPoints.push({ x: 300, y: H });
+    mountainPoints.push({ x: 0, y: H });
+    bg.fillPoints(mountainPoints, true);
+ 
+    // Pics de montagne (plus sombres)
+    bg.fillStyle(0x9d5e3a, 1);
+    for (let i = 0; i < 4; i++) {
+      const peakX = 50 + i * 80;
+      const peakY = H * 0.5 - 60;
+      bg.fillTriangle(peakX - 30, peakY + 60, peakX, peakY, peakX + 30, peakY + 60);
+    }
   }
  
   // ── Générer les tuiles de terrain ─────────────────────────
