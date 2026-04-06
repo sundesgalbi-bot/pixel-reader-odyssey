@@ -9,7 +9,7 @@
  * ════════════════════════════════════════════════════════════
  */
  
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 const CACHE_NAME    = `pixelreader-v${CACHE_VERSION}`;
  
 // Fichiers à mettre en cache lors de l'installation
@@ -94,18 +94,43 @@ self.addEventListener('fetch', (event) => {
   // Ignorer les extensions Chrome
   if (url.protocol === 'chrome-extension:') return;
  
+  // Priorité réseau pour les scripts, HTML et JSON : on veut toujours récupérer la dernière version
+  const networkFirst = request.destination === 'script' ||
+                       request.destination === 'document' ||
+                       request.destination === 'manifest' ||
+                       url.pathname.endsWith('.js') ||
+                       url.pathname.endsWith('.html') ||
+                       url.pathname.endsWith('.json');
+ 
+  if (networkFirst) {
+    event.respondWith(
+      fetch(request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type !== 'opaque') {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone));
+        }
+        return networkResponse;
+      }).catch(() => {
+        return caches.match(request).then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          if (request.destination === 'document') return caches.match('./index.html');
+        });
+      })
+    );
+    return;
+  }
+ 
   // ── Stratégie : Cache First (assets statiques) ───────────
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
         // Revalider en arrière-plan (stale-while-revalidate)
-        const fetchPromise = fetch(request).then((networkResponse) => {
+        fetch(request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(request, networkResponse.clone());
             });
           }
-          return networkResponse;
         }).catch(() => {/* Silencieux en hors-ligne */});
  
         return cachedResponse;
